@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "user-service/proto";
+
+service UserService {
+    rpc RegisterUser (RegisterUserRequest) returns (UserResponse);
+    rpc AuthenticateUser (AuthenticateUserRequest) returns (AuthResponse);
+    rpc GetUserProfile (GetUserProfileRequest) returns (UserResponse);
+    rpc HealthCheck (HealthRequest) returns (HealthResponse);
+}
+
+message RegisterUserRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+}
+
+message AuthenticateUserRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message GetUserProfileRequest {
+    string id = 1;
+}
+
+message UserResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+}
+
+message AuthResponse {
+    string token = 1;
+    string user_id = 2;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+    string status = 1;
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "api-gateway/proto/order";
+
+service OrderService {
+    rpc CreateOrder (CreateOrderRequest) returns (OrderResponse);
+    rpc GetOrder (GetOrderRequest) returns (OrderResponse);
+    rpc UpdateOrderStatus (UpdateOrderStatusRequest) returns (OrderResponse);
+    rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);
+}
+
+message OrderItem {
+    string product_id = 1;
+    int32 quantity = 2;
+    double price = 3;
+}
+
+message CreateOrderRequest {
+    string user_id = 1;
+    repeated OrderItem items = 2;
+    double total = 3;
+}
+
+message GetOrderRequest {
+    string id = 1;
+}
+
+message UpdateOrderStatusRequest {
+    string id = 1;
+    string status = 2;
+}
+
+message ListOrdersRequest {
+    string user_id = 1;
+    string status = 2;
+    int32 page = 3;
+    int32 limit = 4;
+}
+
+message OrderResponse {
+    string id = 1;
+    string user_id = 2;
+    repeated OrderItem items = 3;
+    double total = 4;
+    string status = 5;
+    int64 created_at = 6;
+    int64 updated_at = 7;
+}
+
+message ListOrdersResponse {
+    repeated OrderResponse orders = 1;
+}

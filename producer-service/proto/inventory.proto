@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package inventory;
+
+option go_package = "consumer-service/proto";
+
+service InventoryService {
+    rpc UpdateProduct (ProductRequest) returns (ProductResponse);
+}
+
+message ProductRequest {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    double price = 4;
+    int32 stock = 5;
+    string category = 6;
+}
+
+message ProductResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    double price = 4;
+    int32 stock = 5;
+    string category = 6;
+}
