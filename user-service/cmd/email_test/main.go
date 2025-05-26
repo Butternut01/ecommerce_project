@@ -11,7 +11,7 @@ func main() {
 	cfg := config.NewConfig()
 	emailService := service.NewEmailService(cfg)
 
-	err := emailService.SendWelcomeEmail("bayadilov06@gmail.com", "TestUser")
+	err := emailService.SendWelcomeEmail("example@email.com", "TestUser")
 	if err != nil {
 		log.Fatal("Failed to send email:", err)
 	}
