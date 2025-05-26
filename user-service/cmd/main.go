@@ -19,6 +19,7 @@ import (
 	"user-service/internal/config"
 	"user-service/internal/controller"
 	"user-service/internal/repository"
+	"user-service/internal/service"       // ✅ Added this
 	"user-service/internal/usecase"
 	pb "user-service/proto"
 )
@@ -26,6 +27,9 @@ import (
 func main() {
 	// Load configuration
 	cfg := config.NewConfig()
+
+	// Create EmailService
+	emailService := service.NewEmailService(cfg) // ✅ Added this
 
 	// Connect to MongoDB
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -44,8 +48,8 @@ func main() {
 	// Initialize repository
 	userRepo := repository.NewUserRepository(client.Database(cfg.DatabaseName).Collection("users"))
 
-	// Initialize use case
-	userUseCase := usecase.NewUserUseCase(*userRepo)
+	// Initialize use case with email service
+	userUseCase := usecase.NewUserUseCase(interface{}(userRepo).(repository.UserRepository), emailService) // cast to interface if needed
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer(
@@ -53,7 +57,7 @@ func main() {
 	)
 
 	// Register services
-	userController := controller.NewUserController(*userUseCase)
+	userController := controller.NewUserController(*userUseCase) // pass value instead of pointer
 	pb.RegisterUserServiceServer(grpcServer, userController)
 
 	// Add health check service

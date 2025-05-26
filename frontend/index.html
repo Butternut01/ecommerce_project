@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Microservices</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>E-Commerce Store</h1>
+        <div id="auth-section">
+            <button id="login-btn">Login</button>
+            <button id="register-btn">Register</button>
+            <span id="user-info" style="display:none"></span>
+            <button id="logout-btn" style="display:none">Logout</button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#" class="nav-link" data-page="products">Products</a></li>
+            <li><a href="#" class="nav-link" data-page="orders">My Orders</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form" style="display:none">
+            <h2>Login</h2>
+            <form id="login-form-data">
+                <input type="text" placeholder="Username" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="register-form" class="auth-form" style="display:none">
+            <h2>Register</h2>
+            <form id="register-form-data">
+                <input type="text" placeholder="Username" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+
+        <!-- Products Page -->
+        <div id="products-page" style="display:none">
+            <h2>Products</h2>
+            <div id="product-list" class="grid-container"></div>
+        </div>
+
+        <!-- Orders Page -->
+        <div id="orders-page" style="display:none">
+            <h2>My Orders</h2>
+            <div id="order-list"></div>
+        </div>
+
+        <!-- Product Detail Modal -->
+        <div id="product-modal" class="modal" style="display:none">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="product-modal-title"></h2>
+                <div id="product-modal-content"></div>
+                <div id="product-order-form" style="display:none">
+                    <h3>Place Order</h3>
+                    <form id="order-form">
+                        <input type="number" id="order-quantity" min="1" value="1">
+                        <button type="submit">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 E-Commerce Microservices</p>
+    </footer>
+
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/products.js"></script>
+    <script type="module" src="js/orders.js"></script>
+    <script>
+        // Navigation logic
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = e.target.getAttribute('data-page');
+                showPage(page);
+            });
+        });
+
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('main > div').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // Show selected page
+            document.getElementById(`${page}-page`).style.display = 'block';
+            
+            // Load data if needed
+            if (page === 'products') {
+                loadProducts();
+            } else if (page === 'orders') {
+                loadOrders();
+            }
+        }
+
+        // Show products by default
+        showPage('products');
+    </script>
+</body>
+</html>

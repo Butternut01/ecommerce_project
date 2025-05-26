@@ -56,7 +56,6 @@ func (h *GatewayHandler) GetProduct(c *gin.Context) {
 
 func (h *GatewayHandler) ListProducts(c *gin.Context) {
 	var req pbinv.ListProductsRequest
-	// Optionally bind query parameters to req here if needed
 	if err := c.ShouldBindQuery(&req); err != nil {
 		// Ignore error, just use default zero values if not provided
 	}
@@ -65,8 +64,9 @@ func (h *GatewayHandler) ListProducts(c *gin.Context) {
 		handleGRPCError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, res.Products) // ✅ CORRECT: return only the array
 }
+
 
 func (h *GatewayHandler) CreateOrder(c *gin.Context) {
 	var req pborder.CreateOrderRequest

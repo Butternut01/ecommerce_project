@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"order-service/internal/entity"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,36 +33,49 @@ func NewOrderRepository(db *mongo.Database, client *mongo.Client) OrderRepositor
 }
 
 func (r *orderRepository) Create(order *entity.Order) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+    log.Printf("Starting order creation for user %s", order.UserID)
 
-	session, err := r.client.StartSession()
-	if err != nil {
-		return err
-	}
-	defer session.EndSession(ctx)
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
 
-	_, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
-		order.CreatedAt = time.Now().Unix()
-		order.UpdatedAt = order.CreatedAt
+    session, err := r.client.StartSession()
+    if err != nil {
+        log.Printf("Failed to start session: %v", err)
+        return err
+    }
+    defer session.EndSession(ctx)
 
-		if order.Total == 0 {
-			for _, item := range order.Items {
-				order.Total += item.Price * float64(item.Quantity)
-			}
-		}
+    log.Println("Starting transaction...")
+    _, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
+        log.Printf("Processing order with %d items", len(order.Items))
 
-		_, err := r.collection.InsertOne(sessCtx, order)
-		if err != nil {
-			return nil, err
-		}
+        order.CreatedAt = time.Now().Unix()
+        order.UpdatedAt = order.CreatedAt
 
-		// Add other transactional logic here if needed
+        if order.Total == 0 {
+            for _, item := range order.Items {
+                order.Total += item.Price * float64(item.Quantity)
+            }
+            log.Printf("Calculated order total: %.2f", order.Total)
+        }
 
-		return nil, nil
-	})
+        _, err := r.collection.InsertOne(sessCtx, order)
+        if err != nil {
+            log.Printf("Failed to insert order: %v", err)
+            return nil, err
+        }
 
-	return err
+        log.Println("Order successfully created in transaction")
+        return nil, nil
+    })
+
+    if err != nil {
+        log.Printf("Transaction failed: %v", err)
+    } else {
+        log.Println("Transaction committed successfully")
+    }
+
+    return err
 }
 
 func (r *orderRepository) FindByID(id string) (*entity.Order, error) {

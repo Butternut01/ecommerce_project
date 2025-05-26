@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"user-service/internal/models"
 )
 
@@ -14,18 +14,23 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-type UserRepository struct {
+type UserRepository interface {
+	CreateUser(ctx context.Context, user *models.User) error
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
+}
+
+type userRepository struct {
 	collection *mongo.Collection
 }
 
-func NewUserRepository(collection *mongo.Collection) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(collection *mongo.Collection) UserRepository {
+	return &userRepository{
 		collection: collection,
 	}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
-	// Check if username already exists
+func (r *userRepository) CreateUser(ctx context.Context, user *models.User) error {
 	filter := bson.M{"username": user.Username}
 	if err := r.collection.FindOne(ctx, filter).Err(); err == nil {
 		return errors.New("username already exists")
@@ -38,7 +43,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 	return err
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
+func (r *userRepository) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -55,7 +60,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*models.Us
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
+func (r *userRepository) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
 	err := r.collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
 	if err != nil {

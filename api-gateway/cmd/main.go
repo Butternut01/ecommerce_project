@@ -49,6 +49,23 @@ func main() {
 
 	// Setup Gin
 	router := gin.Default()
+
+	// Add CORS middleware
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Your frontend URL
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Handle OPTIONS requests (CORS preflight)
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204) // No content for OPTIONS
+			return
+		}
+
+		c.Next()
+	})
+
 	router.Use(middleware.LoggingMiddleware())
 	// router.Use(middleware.AuthMiddleware()) // Uncomment if you want auth
 
@@ -59,14 +76,17 @@ func main() {
 	router.GET("/products/:id", h.GetProduct)
 	router.GET("/products", h.ListProducts)
 	router.PUT("/products/:id", h.UpdateProduct)
+
 	// Order routes
 	router.POST("/orders", h.CreateOrder)
 	router.GET("/orders/:id", h.GetOrder)
-	router.GET("/orders", h.ListOrders) // <-- Add this line
+	router.GET("/orders", h.ListOrders)
+
 	// User routes
 	router.POST("/users/register", h.RegisterUser)
 	router.POST("/users/login", h.AuthenticateUser)
 
+	// Health and debug routes
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})

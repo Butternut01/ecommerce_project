@@ -3,23 +3,30 @@ package usecase
 import (
 	"context"
 	"errors"
+	"log"
 
 	"user-service/internal/models"
 	"user-service/internal/repository"
+	"user-service/internal/service"
 )
 
 var (
-	ErrUsernameExists      = errors.New("username already exists")
-	ErrInvalidCredentials  = errors.New("invalid credentials")
-	ErrUserNotFound        = errors.New("user not found")
+	ErrUsernameExists     = errors.New("username already exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrUserNotFound       = errors.New("user not found")
 )
 
 type UserUseCase struct {
-	repo repository.UserRepository
+	repo         repository.UserRepository   // Use interface
+	emailService *service.EmailService       // Email service field
 }
 
-func NewUserUseCase(repo repository.UserRepository) *UserUseCase {
-	return &UserUseCase{repo: repo}
+// Updated constructor accepting interface and email service
+func NewUserUseCase(repo repository.UserRepository, emailService *service.EmailService) *UserUseCase {
+	return &UserUseCase{
+		repo:         repo,
+		emailService: emailService,
+	}
 }
 
 func (u *UserUseCase) RegisterUser(ctx context.Context, user *models.User) error {
@@ -31,7 +38,18 @@ func (u *UserUseCase) RegisterUser(ctx context.Context, user *models.User) error
 		return err
 	}
 
-	return u.repo.CreateUser(ctx, user)
+	if err := u.repo.CreateUser(ctx, user); err != nil {
+		return err
+	}
+
+	// Send welcome email asynchronously
+	go func() {
+		if err := u.emailService.SendWelcomeEmail(user.Email, user.Username); err != nil {
+			log.Printf("Failed to send welcome email: %v", err)
+		}
+	}()
+
+	return nil
 }
 
 func (u *UserUseCase) AuthenticateUser(ctx context.Context, username, password string) (*models.User, error) {
