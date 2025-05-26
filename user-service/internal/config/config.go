@@ -24,8 +24,8 @@ func NewConfig() *Config {
 		ServerPort:   getEnv("USER_SERVICE_PORT", "50051"),
 		DatabaseURI:  getEnv("USER_SERVICE_DB_URI", "mongodb://localhost:27017"),
 		DatabaseName: getEnv("USER_SERVICE_DB_NAME", "userdb"),
-		EmailFrom:    getEnv("EMAIL_FROM", "asanalibayadilov555@gmail.com"),
-        EmailPass:    getEnv("EMAIL_PASS", "nigwfqchzouwwttz"), // Use app password
+		EmailFrom:    getEnv("EMAIL_FROM", "example@email.com"),
+        EmailPass:    getEnv("EMAIL_PASS", "password"), // Use app password
         SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
         SMTPPort:     getEnv("SMTP_PORT", "587"),
 	}
